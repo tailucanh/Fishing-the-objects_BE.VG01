@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Bag
   m_EditorClassIdentifier: 
   id: 2
-  itemName: Bag
+  itemName: Handbag
   icon: {fileID: -150608001, guid: 807db8d2ef7207b40830a4d320740b76, type: 3}
   audio: {fileID: 8300000, guid: bf9252c64e0811b4d87bc2503d93ff8d, type: 3}

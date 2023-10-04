@@ -65,6 +65,7 @@ public class CameraController : BaseMonoBehaviour
         {
             isMoving = true;
             BackgroundController.Instance.OpenBackgroundEnd();
+            AudioBackground.Instance.AudioBackgroundPause();
             StartCoroutine(MoveUp());
             
         }
@@ -90,7 +91,7 @@ public class CameraController : BaseMonoBehaviour
     protected override void Update()
     {
         base.Update();
-        if (InventoryManager.Instance.ListSize() == 0)
+        if (InventoryManager.Instance.ListSize() == 4)
         {
             OnMovingUp();
             ExtendHook.Instance.HideHook();

@@ -7,11 +7,11 @@ using UnityEngine.EventSystems;
 public class ItemPickup : AudioManager
 {
 
-    public Item item;
+    [SerializeField] protected Item item;
 
-    private  bool itemClicked = false;
     [SerializeField] protected SpriteRenderer spriteRenderer;
     private Vector3 originalScale;
+    private bool itemClicked = false;
 
 
     protected override void Start()
@@ -19,6 +19,13 @@ public class ItemPickup : AudioManager
         base.Start();
         originalScale = transform.localScale;
     }
+
+    protected override void Update()
+    {
+        base.Update();
+        
+    }
+
 
     protected override void LoadComponents()
     {
@@ -35,7 +42,7 @@ public class ItemPickup : AudioManager
 
     public virtual void Pickup()
     {
-        InventoryManager.Instance.RemoveItem(item);
+        InventoryManager.Instance.AddItem(item);
     }
 
     private void OnDestroy()
@@ -45,25 +52,27 @@ public class ItemPickup : AudioManager
         MakeOtherItemsTransparent(1f, true);
     }
 
-
-
     public void OnMouseDown()
     {
         if (!itemClicked)
         {
+            
             HookController.Instance.MoveHook(transform);
-            Debug.Log(item.name);
+           
+            Debug.Log(item.itemName);
             StartCoroutine(DelayAudioItem());
             itemClicked = true;
 
             MakeOtherItemsTransparent(0.55f,false);
             Vector3 newScale = originalScale * 1.2f; 
             transform.localScale = newScale;
-
             StartCoroutine(ReturnToOriginalSize());
+            AudioGuiding.Instance.GuidingAudioStop();
+            ItemText.Instance.ShowItemText(item.itemName);
         }
        
     }
+
 
     private IEnumerator DelayAudioItem()
     {

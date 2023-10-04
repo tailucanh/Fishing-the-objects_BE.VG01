@@ -16,26 +16,6 @@ public class InventoryManager : BaseMonoBehaviour
     }
 
 
-    protected override void LoadComponents()
-    {
-        base.LoadComponents();
-        this.LoadItems();
-    }
-
-    protected virtual void LoadItems()
-    {
-        if (listItems.Count > 0) return;
-        ItemPickup[] itemPickups = GetComponentsInChildren<ItemPickup>();
-
-        foreach (ItemPickup itemPickup in itemPickups)
-        {
-            if (itemPickup != null)
-            {
-                Item item = itemPickup.item;
-                listItems.Add(item);
-            }
-        }
-    }
 
     protected override void Update()
     {
@@ -47,6 +27,10 @@ public class InventoryManager : BaseMonoBehaviour
     public virtual int ListSize()
     {
         return listItems.Count;
+    }
+    public virtual void AddItem(Item item)
+    {
+        listItems.Add(item);
     }
 
 

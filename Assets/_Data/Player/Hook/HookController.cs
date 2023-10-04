@@ -19,6 +19,11 @@ public class HookController : BaseMonoBehaviour
     private bool isAnimating = false;
     private bool isMovingToNewPosition = false;
 
+    private bool timerStarted = false;
+    private float clickInterval = 10f;
+    private float audioInterval = 5f;
+
+
     protected override void Awake()
     {
         if (HookController.instance != null) return;
@@ -35,10 +40,13 @@ public class HookController : BaseMonoBehaviour
 
     protected override void Update()
     {
-
+        if (!timerStarted && InventoryManager.Instance.ListSize() != 4 )
+        {
+            StartCoroutine(StartTimerAudioGuiding());
+            timerStarted = true;
+        }
         if (targetObject != null)
         {
-            
             if (isMovingHorizontally)
             {
                
@@ -70,6 +78,8 @@ public class HookController : BaseMonoBehaviour
 
             }
         }
+
+
         if (shouldMoveUpAfterAttach)
         {
 
@@ -106,6 +116,7 @@ public class HookController : BaseMonoBehaviour
                     AudioHook.Instance.HookAudioStop();
                     Destroy(targetObject.gameObject);
                     shouldMoveUpAfterAttach = false;
+                    timerStarted = false;
                     ExtendHook.Instance.EnebalAnimation();
                     AudioPickup.Instance.PickUpAudio();
 
@@ -120,8 +131,78 @@ public class HookController : BaseMonoBehaviour
 
             }
 
+            Debug.Log("isMovingToNewPosition: "+ isMovingToNewPosition);
         }
     }
+
+    public void MoveHook(Transform target)
+    {
+        if (target != null)
+        {
+            targetObject = target;
+            isMovingHorizontally = true;
+            shouldMoveUpAfterAttach = false;
+
+        }
+    }
+
+    public void AttachObjectToHook()
+    {
+
+        targetObject.SetParent(transform);
+        float yOffset = 1.5f;
+        targetObject.localPosition = new Vector3(targetObject.localPosition.x, targetObject.localPosition.y + yOffset, targetObject.localPosition.z);
+
+    }
+
+
+
+    private IEnumerator StartTimerAudioGuiding()
+    {
+        timerStarted = true;
+        float timer = 0f;
+
+        while (timer < clickInterval)
+        {
+            if (targetObject != null)
+            {
+
+                yield break;
+
+            }
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        Debug.Log("Không có item nào được click trong " + clickInterval + " giây.");
+
+        StartCoroutine(StartAudioGuidingLoop());
+
+    }
+
+    private IEnumerator StartAudioGuidingLoop()
+    {
+        Debug.Log("Phát đề bài");
+        AudioGuiding.Instance.GuidingAudioPlay();
+
+        while (true)
+        {
+           
+            yield return new WaitForSeconds(audioInterval);
+            if (targetObject != null)
+            {
+
+                AudioGuiding.Instance.GuidingAudioStop();
+                break;
+
+            }
+            Debug.Log("Phát audio tiếp theo sau " + audioInterval + " giây.");
+
+            AudioGuiding.Instance.GuidingAudioPlay();
+        }
+
+    }
+
     private IEnumerator DelayMoveHookMiddle( )
     {
 
@@ -163,26 +244,6 @@ public class HookController : BaseMonoBehaviour
         transform.position = initialPosition;
         isMovingToNewPosition = false;
         isMovingDown = false;
-    }
-
-    public void MoveHook(Transform target)
-    {
-        if (target != null)
-        {
-            targetObject = target;
-            isMovingHorizontally = true;
-            shouldMoveUpAfterAttach = false;
-
-        }
-    }
-
-    public void AttachObjectToHook()
-    {
-
-        targetObject.SetParent(transform);
-        float yOffset = 1.5f;
-        targetObject.localPosition = new Vector3(targetObject.localPosition.x, targetObject.localPosition.y + yOffset, targetObject.localPosition.z);
-
     }
 
 

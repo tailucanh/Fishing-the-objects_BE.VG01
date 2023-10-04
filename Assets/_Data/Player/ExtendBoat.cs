@@ -72,7 +72,7 @@ public class ExtendBoat : BaseMonoBehaviour
             ropeBone.X = initialX;
 
         }
-        if (InventoryManager.Instance.ListSize() == 0 && !audioPlayed)
+        if (InventoryManager.Instance.ListSize() == 4 && !audioPlayed)
         {
            
             audioPlayed = true; 
@@ -129,6 +129,7 @@ public class ExtendBoat : BaseMonoBehaviour
         }
 
         ExtendHook.Instance.ShowHook();
+        AudioGuiding.Instance.GuidingAudioPlay();
     }
  
    
