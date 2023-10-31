@@ -28,6 +28,7 @@
  *****************************************************************************/
 
 using System;
+using UnityEngine;
 
 namespace Spine {
 	/// <summary>Attachment that displays a texture region.</summary>
@@ -204,5 +205,7 @@ namespace Spine {
 			copy.a = a;
 			return copy;
 		}
-	}
+
+       
+    }
 }

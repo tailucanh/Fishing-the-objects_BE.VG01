@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6838010845507729904}
   - component: {fileID: 6838010845507729903}
-  - component: {fileID: 6838010845507729902}
+  - component: {fileID: 4560622127021337497}
   m_Layer: 0
   m_Name: Wave
   m_TagString: Untagged
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &6838010845507729902
+--- !u!114 &4560622127021337497
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,6 +94,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6838010845507729905}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d40d42ef703115342b56fb0a227de565, type: 3}
+  m_Script: {fileID: 11500000, guid: 52c96d4b8543b4141be3d0b41d8bcdc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialPosition: {x: 0, y: 0, z: 0}
