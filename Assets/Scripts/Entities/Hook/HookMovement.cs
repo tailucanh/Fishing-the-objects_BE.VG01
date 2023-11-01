@@ -2,47 +2,66 @@
 using Assets.Scripts.UI;
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Assets.Scripts.Entities
 {
 
-    public class HookMovement : MonoBehaviour, IMoveHook, IShowTextUI
+    public class HookMovement : MonoBehaviour, IMoveHook, IDestroyItemByHook,IShowTextUI
     {
-        public bool IsMovingDown { get;private set; } = false;
-        public bool IsMovingHorizontally { get; set; } = false;
-        public bool IsMovingUpAfterAttach { get;  set; } = false;
-
-        public bool IsMovingToNewPosition { get;  set; } = false;
-        public bool IsAnimating { get;  set; } = false;
-
-        public bool IsCompleteMove { get; set; } = false;
-        public bool IsDestroyItem { get; set; }
-
-        private bool _isShowItem = false;
-
+        public bool IsMoving { get; set; } = false;
+        public bool IsDestroy { get; set; }
 
         private Vector3 initialPosition;
         protected float moveSpeed = 5f;
         protected float dropSpeed = 5f;
         protected float moveUpSpeed = 3f;
-        
 
+        private bool _isShowItem = false;
+
+        private bool isMovingUpAfterAttach = false;
+        private bool isAnimating = false;
+        protected bool isMovingDown = false;
+        protected bool isMovingToNewPosition = false;
 
         public bool IsShowUI()
         {
             return _isShowItem;
         }
+
+        public bool DestroyItem()
+        {
+            return IsDestroy;
+        }
+
         private void Start()
         {
             initialPosition = transform.position;
         }
-
-
-        public void OnMoveHorizontalMiddle(Vector3 targetPosition, IHookAnimation hookAnimation)
+  
+        public void OnMoveHook(Transform targetObject, IHookAnimation hookAnimation)
         {
-            IsCompleteMove = true;
-            Vector3 middlePosition = new Vector3(targetPosition.x, transform.position.y, targetPosition.z);
+            if (IsMoving)
+            {
+                OnMoveHorizontalMiddle(targetObject, hookAnimation);
+            }
+            else if (!isAnimating)
+            {
+                OnDropAndAttachObject(targetObject, hookAnimation);
+            }
+            if (isMovingUpAfterAttach)
+            {
+               OnMoveUp(targetObject, hookAnimation);
+
+            }
+
+        }
+
+
+        public void OnMoveHorizontalMiddle(Transform targetObject, IHookAnimation hookAnimation)
+        {
+            Vector3 middlePosition = new Vector3(targetObject.position.x, transform.position.y, targetObject.position.z);
             transform.position = Vector3.MoveTowards(transform.position, middlePosition, moveSpeed * Time.deltaTime);
 
             if (transform.position == middlePosition)
@@ -53,9 +72,8 @@ namespace Assets.Scripts.Entities
         }
 
 
-        public void OnAttachObjectToHook(Transform targetObject, IHookAnimation hookAnimation)
+        public void OnDropAndAttachObject(Transform targetObject, IHookAnimation hookAnimation)
         {
-            IsCompleteMove = true;
             if (transform.position == targetObject.position)
             {
                 StartCoroutine(PlayAnimationAndAttach(targetObject, hookAnimation));
@@ -64,16 +82,15 @@ namespace Assets.Scripts.Entities
             {
                 transform.position = Vector3.MoveTowards(transform.position, targetObject.position, dropSpeed * Time.deltaTime);
             }
-        }
 
+        }
 
 
         public void OnMoveUp(Transform targetObject, IHookAnimation hookAnimation)
         {
-            IsCompleteMove = true;
             Vector3 delayPosition = new Vector3(transform.position.x, initialPosition.y, transform.position.z);
 
-            if (!IsMovingToNewPosition)
+            if (!isMovingToNewPosition)
             {
                 if (transform.position.y >= delayPosition.y)
                 {
@@ -92,9 +109,9 @@ namespace Assets.Scripts.Entities
                 else
                 {  
                     Destroy(targetObject.gameObject);
-                    IsMovingUpAfterAttach = false;
+                    isMovingUpAfterAttach = false;
                   
-                    if (!IsMovingDown)
+                    if (!isMovingDown)
                     {
                         StartCoroutine(MoveDownSmoothly());
                     }
@@ -104,13 +121,13 @@ namespace Assets.Scripts.Entities
 
         private IEnumerator PlayAnimationAndAttach(Transform targetObject, IHookAnimation hookAnimation)
         {
-            IsAnimating = true;
+            isAnimating = true;
             yield return new WaitForSeconds(0.2f);
             hookAnimation.SetAnimation(StateHook.Close, false);
             yield return new WaitForSeconds(0.2f);
             AttachObjectToHook(targetObject);
-            IsMovingUpAfterAttach = true;
-            IsAnimating = false;
+            isMovingUpAfterAttach = true;
+            isAnimating = false;
         }
 
         protected virtual void AttachObjectToHook(Transform targetObject)
@@ -126,14 +143,13 @@ namespace Assets.Scripts.Entities
             _isShowItem = true;
             yield return new WaitForSeconds(2f);
             _isShowItem = false;
-            IsMovingToNewPosition = true;
+            isMovingToNewPosition = true;
         }
 
         private IEnumerator MoveDownSmoothly()
         {
-            IsMovingDown = true;
-            IsDestroyItem = true;
-            IsCompleteMove = false;
+            isMovingDown = true;
+            IsDestroy = true;
             float startTime = Time.time;
 
             while (Time.time - startTime < 3f)
@@ -142,8 +158,8 @@ namespace Assets.Scripts.Entities
                 transform.position = Vector3.Lerp(transform.position, initialPosition, t);
                 yield return null;
             }
-            IsMovingToNewPosition = false;
-            IsMovingDown = false;
+            isMovingToNewPosition = false;
+            isMovingDown = false;
             
         }
 
@@ -151,7 +167,8 @@ namespace Assets.Scripts.Entities
         {
             hookAnimation.SetAnimation(StateHook.Open, false);
             yield return new WaitForSeconds(delay);
-            IsMovingHorizontally = false;
+            IsMoving = false;
         }
+       
     }
 }

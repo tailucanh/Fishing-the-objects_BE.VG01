@@ -16,6 +16,7 @@ namespace Assets.Scripts.Entities
         private IHookObject _hookObject;
         private IAudioGuidingLoop _audioGuidingLoop;
         private IMoveHook _moveHook;
+        private IDestroyItemByHook _destroyItemByHook;
         private IShowTextUI _showTextUI;
 
         private AudioPickup _audioPickup;
@@ -23,9 +24,14 @@ namespace Assets.Scripts.Entities
 
         private HookPickUpItem _hookPickUpItem;
         private Transform _targetObjectItem;
+
+
+        private bool isMovingHook = false;
+
         private bool hasPlayedAudioHook = false;
         private bool hasPlayedAudioHookPickup = false;
         private bool hasPlayedAudioGuidingLoop = false;
+
 
         public void Init(HookPickUpItem hookPickUpItem)
         {
@@ -37,8 +43,8 @@ namespace Assets.Scripts.Entities
             if(transform != null)
             {
                 _targetObjectItem = transform;
-                _moveHook.IsMovingHorizontally = true;
-                _moveHook.IsMovingUpAfterAttach = false;
+                _moveHook.IsMoving = true;
+                isMovingHook = _moveHook.IsMoving;
             }
 
         }
@@ -47,11 +53,13 @@ namespace Assets.Scripts.Entities
             _hookAnimation = GetComponentInChildren<IHookAnimation>();
             _hookObject = GetComponent<IHookObject>();
             _audioGuidingLoop = GetComponent<IAudioGuidingLoop>();
+            _destroyItemByHook = GetComponent<IDestroyItemByHook>();
             _showTextUI = GetComponent<IShowTextUI>();
             _moveHook = GetComponent<IMoveHook>();
             _audioPickup = GetComponentInChildren<AudioPickup>();
             _audioHook = GetComponentInChildren<AudioHook>();
         }
+
         protected void Start()
         {
             _hookObject.Hide();
@@ -59,24 +67,23 @@ namespace Assets.Scripts.Entities
         }
 
         protected void Update()
-        {
+        { 
             OnMoveHook();
             OnChangeAudioAndAnimatonByHook();
             OnChangeAudioPickUpItem();
             OnChangeAudioGuidingLoop();
-            Debug.Log("_moveHook.IsMovingHorizontally: " + _moveHook.IsMovingHorizontally);
-
+            Debug.Log("isMovingHook: " + isMovingHook);
         }
 
         protected void OnChangeAudioGuidingLoop()
         {
 
-            if (_moveHook.IsCompleteMove)
+            if (isMovingHook)
             {
                 _audioGuidingLoop.StopAudio();
                 hasPlayedAudioGuidingLoop = false;
             }
-            if (!_moveHook.IsDestroyItem)
+            if (!_destroyItemByHook.IsDestroy)
             {
                 if (!hasPlayedAudioGuidingLoop)
                 {
@@ -90,23 +97,25 @@ namespace Assets.Scripts.Entities
         protected void OnChangeAudioPickUpItem()
         {
            
-            if (_moveHook.IsDestroyItem)
+            if (_destroyItemByHook.IsDestroy)
             {
                 if (!hasPlayedAudioHookPickup)
                 {
                     _audioPickup.Play();
+                    isMovingHook = false;
                     hasPlayedAudioHookPickup = true;
+                 
                 }
                 if (!_audioPickup.GetComponent<AudioSource>().isPlaying)
                 {
-                    _moveHook.IsDestroyItem = false;
+                    _destroyItemByHook.IsDestroy = false;
+                    _moveHook.IsMoving = false;
                 }
             }
-            if (!_moveHook.IsDestroyItem)
+            if (!_destroyItemByHook.IsDestroy)
             {
                 hasPlayedAudioHookPickup = false;
             }
-
 
         }
 
@@ -122,7 +131,7 @@ namespace Assets.Scripts.Entities
             }
 
 
-            if (!_moveHook.IsCompleteMove)
+            if (!isMovingHook)
             {
                 _audioHook.Stop();
                 hasPlayedAudioHook = false;
@@ -130,9 +139,8 @@ namespace Assets.Scripts.Entities
                 _hookAnimation.SetAnimation(StateHook.Waiting, false);
             }
 
-            if (_moveHook.IsCompleteMove)
+            if (isMovingHook)
             {
-                //_audioGuidingLoop.StopAudio();
                 AudioGuiding.Instance.Stop();
                 _hookAnimation.DisableAnimation();
                 if (!hasPlayedAudioHook)
@@ -149,23 +157,9 @@ namespace Assets.Scripts.Entities
 
             if (_targetObjectItem != null)
             {
-                if (_moveHook.IsMovingHorizontally)
-                {
-                    _moveHook.OnMoveHorizontalMiddle(_targetObjectItem.position, _hookAnimation);
-                }
-                else if (!_moveHook.IsAnimating)
-                {
-                    _moveHook.OnAttachObjectToHook(_targetObjectItem,_hookAnimation);
-                }
-            }
-
-            if (_moveHook.IsMovingUpAfterAttach)
-            {
-                _moveHook.OnMoveUp(_targetObjectItem, _hookAnimation);
+                _moveHook.OnMoveHook(_targetObjectItem, _hookAnimation);
 
             }
-           
         }
-
     }
 }
